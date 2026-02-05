@@ -1,0 +1,239 @@
+---
+title: "EDA Credit Card Fraud"
+author: "Ernest Kishkin"
+date: "2026-01-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exploratory Data Analysis 
+
+## 1. Viewing cleaned dataset
+By viewing cleaned dataset, we can understand, what variables we can encounter and meanings of their values to future analysis results. In other words, by understanding what data is about in the cleaned database, we can compose chunks of code that will bring us the needed result.
+
+In order to run some of the following code chunks, we will need to install and load dplyr package, which will allow us to write code using pipes:
+
+```{r} 
+library(dplyr)
+```
+
+After installing and loading the dplyr package, by running following formula, we will be able to see the column names of the table:
+
+```{r}
+credit_card_data <- read.csv("C:/Users/ernes/OneDrive/Desktop/R Programming Projects/card_transdata.csv")
+clean_data <- unique(na.omit(credit_card_data))
+colnames(clean_data)
+```
+
+From the received information, we are able to deduct, with what variables we will be working.
+
+**Short description of the columns:**
+
+- ***distance_from_home*** = distance between transaction place and home address of the cardholder
+- ***distance_from_last_transaction*** = distance between recorded transaction place and previous transaction recorded place
+- ***ratio_to_median_price*** = transaction amount, compared to usual purchasing amounts
+- ***repeat_retailer*** = purchase was made at the same retailer (1 = yes, 0 = no)
+- ***used_chip*** -> indicates if the physical card chip was used during the transaction (1 = yes, 0 = no)
+- ***used_pin_number*** = indicates if the pin number was entered during transaction (1 = yes, 0 = no)
+- ***online_order*** = indicates, whether the transaction was made online (1 = yes, 0 = no)
+- ***fraud*** = indicates, if the transaction was fraudulent (1 = yes, 0 = no)
+
+### Additional step: Checking data type
+Checking data type is important as it may affect computation process.
+
+We will be checking data type of every column with the following command:
+
+```{r} 
+str(clean_data)
+``` 
+*As we can see, all of the column values are numeric. That is preferable for the data analysis in R Programming language, as numeric type of values instead of Boolean will allow much faster mathematical calculations.* 
+
+## 2. Fraud rate calculation
+First, we will be calculating the overall fraud rate for the all transaction entries with the following formula:
+
+```{r}
+overall_fraud_rate <- mean(clean_data$fraud)*100
+overall_fraud_rate
+```
+
+As we can see, the overall fraud rate for all recorded transactions is 8,74%.
+
+In the next section, let's calculate fraud rates based on different criteria.
+
+## 3. Fraud rate calculations depending on various criteria
+
+As we have calculated fraud overall fraud rate previously, the need for further calculations of fraud rates in different scenarios is also present.
+
+### Fraud rate based whether the credit card chip was used
+
+The following code chunk will allow us to determine fraud rates for transactions depending on whether the credit card chip was used or not:
+
+```{r}
+chip_fraud <- clean_data %>% 
+  group_by(used_chip) %>% 
+  summarise(fraud_score=mean(fraud)*100)
+chip_fraud
+```
+
+The results show that that the fraud rate of the transactions, when the credit card chip was used, is approx. 6.4%, while the rate of fraudulent transactions, when the credit card chip was not used, is approx. 10%. As we can see, the increase in the fraudulent transactions, when the chip isn't being use, during the transaction, is 56.25 %. 
+
+### Average distance from home/last transaction point for fraud/non-fraud transactions
+
+It is important for us to find the average distance from home and from place, where last transaction took place, for both fraud and non-fraud transactions, as it would allow us to locate certain distance, at which the transaction should be flagged for fraud review.
+
+It will be done by executing following code chunk:
+
+```{r}
+distance_fraud <- clean_data %>% 
+  group_by(fraud) %>% 
+  summarize(average_distance_from_home = mean(distance_from_home),
+            average_distance_from_last_transaction = mean(distance_from_last_transaction))
+
+distance_fraud
+```
+The results show, that, on average, fraudulent transactions happen approximately three times farther both from home address and from last transaction point, than non-fraudulent.
+
+For further portrayals, it is necessary to divide the table into two separate tables:
+
+```{r}
+home_distance_fraud <- clean_data %>% 
+  group_by(fraud) %>% 
+  summarize(avg_dist_home = mean(distance_from_home))
+transaction_distance_fraud <- clean_data %>% 
+  group_by(fraud) %>% 
+  summarize(avg_lst_trns_dist = mean(distance_from_last_transaction))
+```
+
+### Fraud rate for online/in-person transactions
+
+By running following code chunk, we will get fraud rates for both in-person/online transactions:
+
+```{r}
+online_order_fraud <- clean_data %>% 
+  group_by(online_order) %>% 
+  summarize(fraud_rate = mean(fraud)*100)
+
+online_order_fraud
+```
+
+The results show that the fraud rate for all in-person transactions was 1.34 %, while for all transactions online, the fraud rate was 12.71 %. That indicates that fraudulent transactions may happen more likely online as the fraud rate for transactions increases by approximately 11%, when they happen online.
+
+### Fraud rate for transactions at the same retailer
+
+Following script will provide us with the fraud rate for the transactions at the repeated retailer. This will give us insights on retailer importance for the process of flagging the transaction for fraud check.
+
+```{r}
+retailer_repeat_fraud <- clean_data %>% 
+  group_by(repeat_retailer) %>% 
+  summarize(fraud_rate = mean (fraud)*100)
+retailer_repeat_fraud
+```
+
+Repeat retailer status shows minimal impact on fraud rates (8.72 % vs 8.84%), indicating this variable is not a strong fraud predictor. Fraudsters exploit both familiar and unfamiliar merchants equally.
+
+### Fraud rate for transactions, during which PIN number was used
+
+Following script will allow us to determine the fraud rates for transactions when PIN number was entered and fraud rate for transactions, during which no PIN code was entered:
+
+```{r} 
+used_pin_fraud <- clean_data %>% 
+  group_by(used_pin_number) %>% 
+  summarize(fraud_rate = mean(fraud)*100)
+
+used_pin_fraud
+```
+
+As we can see, the fraud rate for transactions, during which PIN number was entered, is 0.271 % and the fraud rate for transactions, where no PIN number was entered, was 9.68 %.
+
+### Average ratio to median purchase price for fraud/non-fraud transactions
+It is worth noting, that median to ratio price is a variable, that describes deviation of amount of the transaction from the median of amounts that have been spent previously.It is measured in N times of the usual transaction amount, thus, we could describe it with a formula:
+
+          Ratio = This Transaction's Amount ÷ Median Amount of All Transactions
+
+That being said, following script will allow us to calculate this variable:
+```{r}
+avg_deviation_price <- clean_data %>% 
+  group_by(fraud) %>% 
+  summarize(avg_price_to_median_rate = mean(ratio_to_median_purchase_price))
+avg_deviation_price
+```
+
+Fraudulent transactions average 6x the median purchase price, while legitimate transactions average only 1.5x. This significant difference suggests that transactions exceeding 3x the median purchase price should be flagged for manual fraud review.
+
+## 4. Feature analysis
+
+### Credit card chip usage impact
+
+In order to enable visual representation tools, it is required to have a tidyverse, or dplyr and ggplot2 packages installed and loaded.
+
+```{r}
+library(tidyverse)
+```
+
+Non-chip transactions show a 10.01% fraud rate compared to 6.40% for chip-enabled transactions. This represents a 56% increase in fraud risk when chips are not used, demonstrating that chip technology provides moderate fraud protection.
+
+
+```{r}
+ggplot(chip_fraud) + geom_col(mapping = aes(x=used_chip,y = fraud_score, fill = factor(used_chip))) + labs(title = "Fraud score for chip/non-chip transactions") +  theme(plot.title = element_text(hjust = 0.5, vjust=2.12, size = 15))
+```
+
+### Distance from home address/last transaction place 
+
+Findings show that, on average, fraudulent transactions happen 66.3 km from the cardholders home address, while non-fraud transactions happen only 22.8 km from cardholders home address. 
+
+```{r}
+ggplot(home_distance_fraud) + geom_col(mapping = aes(x = fraud, y = avg_dist_home, fill = factor(fraud))) + labs(title = "Average distance from home address") + theme(plot.title = element_text(hjust = 0.5, vjust=2.12, size = 15))
+```
+
+Additionally, it is worth mentioning, that the fraudulent transactions happen on average 12.7 km from the last transaction place, while legitimate only happen at 4.3 mark. 
+
+```{r} 
+ggplot(transaction_distance_fraud) + geom_col(mapping = aes(x = fraud, y = avg_lst_trns_dist, fill = factor(fraud))) + labs(title = "Average distance from last transaction") + theme(plot.title = element_text(hjust = 0.5, vjust=2.12, size = 15))
+```
+
+We would be able to conclude that credit card fraudsters tend to perform fraudulent transactions approximately 3 times farther from credit card holders home address, than usual. Moreover, while using stolen credit card, fraudsters maximize the value that they are able to extract from the stolen credit card by using them at distant locations and move rapidly between merchants.
+
+### Online/in-person transactions
+
+Additionally, according to online transaction fraud rate calculations, fraud rate for in-person purchases is 1.32 %, while for online orders, it is 12.7%. These results indicate, that fraud rates increase by 847.7 % when purchases are made online.
+
+```{r}
+ggplot(online_order_fraud) + geom_col(mapping = aes(x = online_order, y = fraud_rate , fill = factor(online_order))) + labs(title = "Fraud rates for in-person/online transactions") + theme(plot.title = element_text(hjust = 0.5,vjust = 2.12, size = 15))
+```
+
+### Transactions at the same retailer
+
+Fraud rates for transactions at the same retailer and for transactions at different retailer differ minimally - while in the first situation the fraud rate is 8.84 %, fraud rate for different retailer is 8.73 %, meaning that the difference is only 0.11%. Visualizing this difference will allow viewer to understand the relatively small significance, that retailer poses to the fraud rates.
+
+```{r}
+ggplot(retailer_repeat_fraud) + geom_col(mapping = aes(x = repeat_retailer, y = fraud_rate , fill = factor(repeat_retailer))) + labs(title = "Fraud rates for repeated/different retailers") + theme(plot.title = element_text(hjust = 0.5,vjust = 2.12, size = 15))
+```
+
+### PIN/Non-PIN transactions
+
+While fraud rates for transactions, during which PIN number was entered, were 0.271%, the increase in fraud rates for non-PIN transactions was extreme. Results show that fraud rate for non-PIN transactions was 9.69%, which has indicated the increase in fraud by 3475.64%.
+
+```{r}
+ggplot(used_pin_fraud) + geom_col(mapping = aes(x = used_pin_number, y = fraud_rate, fill = factor(used_pin_number))) + labs(title = "Fraud rates for PIN/Non-PIN transactions") + theme(plot.title = element_text(hjust = 0.5, vjust = 2.12, size = 15))
+```
+
+### Average ratio to median purchase price for fraud/non-fraud transactions
+
+Findings show that average recorded legitimate transaction deviates from usual spending amount by 1.42 times (it can be translated to 142 % of the usual spending amount), while fraudulent transactions are on average 6 times larger (the recorded fraudulent transaction exceeds average spending amount by 600%). It is possible to conclude, that unusual increase in spending amount could indicate fraud.
+
+```{r}
+ggplot(avg_deviation_price) + geom_col(mapping = aes(x = fraud, y = avg_price_to_median_rate, fill = factor(fraud))) + labs(title = "Average ratio to median purchase price") + theme(plot.title = element_text(hjust = 0.5, vjust = 2.12, size = 15))
+```
+
+## 5. Recommendations
+
+Based on the features analysis results, it is possible to proceed with the following recommendations:
++ 
+- Flag transactions, that happen more than 50 km from home and 10 km from the last transaction place, which happen in under an hour, for manual fraud check in order to minimize the fraud possibility.
+- Make verification for online orders mandatory, since fraud tends to happen a lot more online.
+- Since PIN verification reduces fraud rates significantly, PIN verification should be enforced when possible.
+- Flag transactions, exceeding 3x cardholders median spending amount.
+- Combine online verification, PIN requests and geolocation monitoring for enhanced safety.
