@@ -1,0 +1,25 @@
+##Credit Card Fraud analysis
+
+#Overview
+
+This project is created by analysing Credit Card Fraud dataset from Kaggle (Dhanush Narayanan R, 2022). Tools used for data cleaning and analysis include R, Google BigQuery and Excel.
+Unfortunately, the data source for this dataset creation is not disclosed in the dataset page on Kaggle. Nevertheless, this project highlights risk areas for credit card transactions, 
+portrays overall fraud rate for 1,000,000 recorded transactions and shows the impact of various situations and variables on transaction fraud rates.
+
+#Key Findings:
+
+- Chip usage during the transaction reduces fraud risk by 56 %,
+- On average, distance from cardholders home address to the point of the transaction is 3x farther for fraudulent transactions
+- Additionally, on average, the distance from last point of transaction to the point of currently recorded transaction is approx. 3x further for fraudulent transactions
+- Fraudulent transaction risks are 9 times higher for online orders than for in-person purchases
+- The repeatedness of retailer does not influence or influences minimally fraud rates
+- PIN usage reduces fraud by 97 %
+- Fraudlent transactions exceed average spending amount by 6x 
+
+#Project Components:
+-[R Analysis](./rstudio/) - Data Cleaning documentation, EDA with visualizations
+-[SQL queries](./sql_queries/) - Folder with SQL queries 
+
+#Author: Ernest Kishkin
+#LinkedIn:https://www.linkedin.com/in/ernest-kishkin-494159260/
+#Gmail: ernestkiskin@gmail.com
