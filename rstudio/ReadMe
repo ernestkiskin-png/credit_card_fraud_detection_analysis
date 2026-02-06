@@ -1,8 +1,7 @@
 # Credit Card Fraud Detection Analysis (R Programming language)
 
 ## Overview
-Comprehensive data analysis project identifying fraud patterns and developing actionable prevention strategies for financial institutions. Built using R, SQL, and Tableau to demonstrate end-to-end data analytics capabilities.
-
+Comprehensive data analysis project showcasing Credit Card Fraud dataset analysis
 ## Business Problem
 Credit card fraud costs financial institutions billions annually while creating friction for legitimate customers. This project analyzes transaction patterns to identify high-risk indicators and recommend targeted fraud prevention measures.
 
