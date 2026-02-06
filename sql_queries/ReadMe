@@ -83,8 +83,6 @@ SQL queries calculating fraud and other variables means in various scenarios per
    - Enable BigQuery API
    - Create dataset and upload credit_transdata CSV
 
-2. **Update table references:**
-   - Replace `[your-project].[your-dataset].fraud_data` with your actual table path
 
 3. **Execute queries:**
    - Copy query into BigQuery console
@@ -94,5 +92,5 @@ SQL queries calculating fraud and other variables means in various scenarios per
 ---
 
 **Author:** Ernest Kishkin    
-**LinkedIN** https://www.linkedin.com/in/ernest-kishkin-494159260/
+**LinkedIn** https://www.linkedin.com/in/ernest-kishkin-494159260/
 **Email** ernestkiskin@gmail.com
