@@ -1,0 +1,98 @@
+# SQL Analysis - Credit Card Fraud Detection
+
+## Overview
+SQL queries calculating fraud and other variables means in various scenarios performed in Google BigQuery.
+
+## Database Information
+- **Platform:** Google BigQuery
+- **Dataset Size:** 1,000,000 transactions
+- **Table Name:** `credit-card-fraud-486312.credit_card_fraud.card_transdata`
+
+## Table Schema
+
+| Column Name | Description |
+|-------------|-------------|
+| `distance_from_home` | Distance from cardholder's registered address (kilometers) |
+| `distance_from_last_transaction` | Distance from previous transaction location (kilometers) |
+| `ratio_to_median_purchase_price` | Transaction amount relative to customer's median purchase |
+| `repeat_retailer` | Whether merchant was used before (0=No, 1=Yes) |
+| `used_chip` | Chip card technology used (0=No, 1=Yes) |
+| `used_pin_number` | PIN authentication required (0=No, 1=Yes) |
+| `online_order` | Transaction channel (0=Physical, 1=Online) |
+| `fraud` | Fraud indicator (0=Legitimate, 1=Fraudulent) |
+
+## Query Overview
+
+### 1. Overall Fraud Rate
+**File:** `1_overall_fraud_rate.sql`  
+**Purpose:** Calculate baseline fraud rate across all transactions  
+**Key Finding:** 8.7% overall fraud rate (87,403 fraudulent out of 1,000,000 transactions)
+
+### 2. PIN Authentication Impact
+**File:** `2_pin_fraud.sql`  
+**Purpose:** Analyze fraud prevention effectiveness of PIN verification  
+**Key Finding:** PIN reduces fraud by 97% (9.6% without PIN → 0.27% with PIN)  
+**Business Impact:** Enforcing PIN verification is a strong single measure fraud prevention tactic
+
+### 3. Chip Technology Effectiveness
+**File:** `3_chip_transaction_fraud.sql`  
+**Purpose:** Evaluate chip card technology's fraud prevention capability  
+**Key Finding:** Chip reduces fraud by 36% (10.0% without chip → 6.4% with chip)  
+**Business Impact:** Moderate protection, should be combined with other measures
+
+### 4. Transaction Channel Analysis
+**File:** `4_online_fraud.sql`  
+**Purpose:** Compare fraud rates across online and physical transaction channels  
+**Key Finding:** Online transactions show approx. 10x higher fraud rate (12.7% vs 1.3%)  
+**Business Impact:** Online transactions require enhanced security measures
+
+### 5. Geographic Fraud Patterns
+**File:** `5_distance_fraud_rate.sql`  
+**Purpose:** Identify location-based fraud indicators  
+**Key Findings:**
+- Fraudulent transactions occur 66km from home vs 22km for legitimate (3x farther)
+- Fraudulent transactions occur 12km from last purchase vs 4km for legitimate (3x more movement)  
+**Business Impact:** Distance anomalies are strong fraud signals
+
+### 6. Purchase Amount Anomalies
+**File:** `6_ratio_fraud.sql`  
+**Purpose:** Analyze unusual spending patterns  
+**Key Finding:** Fraudulent transactions average 6x median purchase price vs 1.4x for legitimate  
+**Business Impact:** Transactions >3x median should be flagged for review
+
+### 7. Fraud rate identification at the repeated vs. different retailer
+**File:** `7_retailer_fraud.sql`  
+**Purpose:** Analyze repeated retailer impact on fraud rates 
+**Key Finding** The difference in fraud rates for repeated vs. new retailers is low (8.84 for non-repeated and 8.73 for repeated)
+**Business Impact:** Automated fraud detection rule for real-time monitoring
+
+## Business Insights Summary
+
+| Risk Factor | Fraud Impact | Recommended Action |
+|-------------|--------------|-------------------|
+| No PIN Authentication | 97% higher fraud | Mandate PIN for transactions >$100 |
+| Online Transactions | 10x higher fraud rate | Require two-factor authentication |
+| Distance >50km from home | 3x typical distance | Auto-flag for manual review |
+| Amount >3x median | 4x typical ratio | Trigger verification alert |
+| No chip technology | 56% higher fraud | Encourage chip-enabled terminals |
+
+## How to Run These Queries
+
+1. **Set up BigQuery:**
+   - Create Google Cloud account (free tier available)
+   - Enable BigQuery API
+   - Create dataset and upload credit_transdata CSV
+
+2. **Update table references:**
+   - Replace `[your-project].[your-dataset].fraud_data` with your actual table path
+
+3. **Execute queries:**
+   - Copy query into BigQuery console
+   - Click "Run"
+   - Export results as needed
+
+---
+
+**Author:** Ernest Kishkin    
+**LinkedIN** https://www.linkedin.com/in/ernest-kishkin-494159260/
+**Email** ernestkiskin@gmail.com
