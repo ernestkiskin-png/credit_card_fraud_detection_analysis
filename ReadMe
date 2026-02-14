@@ -19,6 +19,7 @@ portrays overall fraud rate for 1,000,000 recorded transactions and shows the im
 #Project Components:
 -[R Analysis](./rstudio/) - Data Cleaning documentation, EDA with visualizations
 -[SQL queries](./sql_queries/) - Folder with SQL queries 
+-[Tableau visualization] - Separate text file with the link for the analysis results visualization.
 
 #Author: Ernest Kishkin
 #LinkedIn:https://www.linkedin.com/in/ernest-kishkin-494159260/
